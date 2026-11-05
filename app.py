@@ -1,7 +1,7 @@
 import os, io, time, sqlite3, secrets, uuid, re
 from functools import wraps
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify, send_file
+from flask import Flask, render_template, render_template_string, request, redirect, url_for, session, flash, abort, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import qrcode
@@ -122,6 +122,62 @@ def login():
             return redirect(url_for("home"))
         flash("Usuario o contraseña incorrectos.", "error")
     return render_template("login.html")
+
+@app.route("/setup-admin", methods=["GET", "POST"])
+def setup_admin():
+    setup_token = os.environ.get("ADMIN_SETUP_TOKEN", "")
+
+    if not setup_token:
+        abort(404)
+
+    if request.method == "POST":
+        supplied_token = request.form.get("token", "")
+
+        if not secrets.compare_digest(supplied_token, setup_token):
+            abort(403)
+
+        username = request.form.get("username", "").strip()
+        full_name = request.form.get("full_name", "").strip()
+        password = request.form.get("password", "")
+
+        if not username or not full_name or len(password) < 8:
+            return "Completa todos los campos. La contraseña debe tener al menos 8 caracteres.", 400
+
+        with db() as c:
+            c.execute("BEGIN IMMEDIATE")
+            exists = c.execute(
+                "SELECT 1 FROM users WHERE role='teacher' LIMIT 1"
+            ).fetchone()
+
+            if exists:
+                return "Ya existe un profesor registrado.", 409
+
+            c.execute(
+                """INSERT INTO users(username, password_hash, role, full_name)
+                   VALUES(?, ?, 'teacher', ?)""",
+                (username, generate_password_hash(password), full_name)
+            )
+
+        return "¡Usuario de profesor creado! Ya puedes iniciar sesión."
+
+    return render_template_string("""
+    <h2>Crear cuenta de profesor</h2>
+    <form method="POST">
+      <label>Clave de configuración:</label>
+      <input name="token" required>
+      <br><br>
+      <label>Usuario:</label>
+      <input name="username" required>
+      <br><br>
+      <label>Nombre completo:</label>
+      <input name="full_name" required>
+      <br><br>
+      <label>Contraseña (mínimo 8 caracteres):</label>
+      <input name="password" type="password" minlength="8" required>
+      <br><br>
+      <button type="submit">Crear profesor</button>
+    </form>
+    """)
 
 @app.route("/logout", methods=["POST"])
 @login_required()
