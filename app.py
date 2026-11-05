@@ -1,7 +1,6 @@
 import os, io, time, sqlite3, secrets, uuid, re
 from functools import wraps
-from flask import Flask, render_template, render_template_string, request, redirect, url_for, session, flash, abort, jsonify, send_filefrom werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify, send_filefrom itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import qrcode
 
 APP_SECRET = os.environ.get("APP_SECRET", "CAMBIA-ESTA-CLAVE-ANTES-DE-USAR-EN-PRODUCCION")
