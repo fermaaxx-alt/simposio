@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block content %}
+<a href="{{ url_for('teacher') }}">← Volver</a><h1>{{ cl.name }}</h1>
+<section class="panel">
+  <h2>Importar lista completa</h2>
+  <p class="muted">Pega todas las secciones y sus estudiantes en un solo bloque. El sistema creará las secciones y asignará automáticamente cada número de cuenta.</p>
+  <form method="post" class="stack">
+    <input type="hidden" name="action" value="bulk_import">
+    <label>Lista de estudiantes
+      <textarea name="bulk_students" rows="14" required placeholder="SECCIÓN: 0901&#10;Ana López - 20241001&#10;Pedro Díaz - 20241002&#10;&#10;SECCIÓN: 0902&#10;María Ruiz - 20241003&#10;Carlos Pérez - 20241004"></textarea>
+    </label>
+    <p class="muted">Formato: una línea por estudiante: <strong>Nombre completo - número de cuenta</strong>. Antes de cada grupo escribe <strong>SECCIÓN: 0901</strong>. También acepta nombres separados por coma, punto y coma o tabulación.</p>
+    <button class="primary">Importar todos los estudiantes</button>
+  </form>
+</section>
+<section class="panel">
+  <h2>Secciones de esta clase</h2>
+  <form method="post" class="inline"><input type="hidden" name="action" value="create_section"><input name="section_name" placeholder="Ej. 0904" required><button class="primary">Crear sección manualmente</button></form>
+  <p class="muted">Secciones: {% for sec in sections %}<strong>{{ sec.name }}</strong>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+</section>
+<section class="panel">
+  <h2>Estudiantes inscritos ({{ students|length }})</h2>
+  {% for st in students %}<div class="listrow"><strong>{{ st.full_name }}</strong><span>{{ st.student_code }} · {{ st.section_name or 'Sin sección' }}</span></div>
+  {% else %}<p class="muted">No hay estudiantes inscritos.</p>{% endfor %}
+</section>{% endblock %}

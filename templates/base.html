@@ -1,0 +1,4 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Asistencia QR</title><link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}"></head><body>
+<header><a href="/" class="brand">Asistencia QR</a>{% if session.get('role') == 'teacher' %}<span>{{ session.get('full_name') }} · {{ session.get('role') }}</span><form method="post" action="{{ url_for('logout') }}"><button class="ghost">Cerrar sesión</button></form>{% endif %}</header>
+<main>{% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}{% block content %}{% endblock %}</main>
+<footer>Sistema de demostración · QR dinámico</footer></body></html>
